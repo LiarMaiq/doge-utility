@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <string.h>
 // Project
-#include "Utility.h"
+#include "DogeUtility.h"
 
 #if defined(_WIN32)
 #include <objbase.h>
