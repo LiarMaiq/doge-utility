@@ -3,3 +3,5 @@ PROJECT(DogeUtility)
 
 # DogeUtility
 add_library(DogeUtility SHARED ${CMAKE_SOURCE_DIR}/Utility.cpp)
+target_link_libraries(DogeUtility uuid)
+
