@@ -405,3 +405,12 @@ void Doge_Utility::stringToVector(std::vector<std::string>& vec, std::string str
 
     return;
 }
+
+void Doge_Utility::sleep(uint32_t ms)
+{
+#ifdef _WIN32
+    Sleep(ms);
+#else 
+    usleep(ms * 1000);
+#endif
+}

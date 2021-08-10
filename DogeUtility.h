@@ -34,4 +34,6 @@ namespace Doge_Utility
     std::string getAppPath();
     std::string generateUuid();
     std::string getEndpoint(const std::string & protocol, const std::string& ip, const std::string& port);
+
+    void sleep(uint32_t ms);
 }
