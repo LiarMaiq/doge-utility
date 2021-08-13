@@ -1,2 +1,8 @@
 build
 .vscode
+ms/
+vs/DogeUtility.VC.VC.opendb
+vs/DogeUtility.VC.db
+vs/Debug
+vs/Release
+vs/.vs
