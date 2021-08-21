@@ -42,4 +42,7 @@ namespace Doge_Utility
     std::string DOGE_EXPORT getEndpoint(const std::string & protocol, const std::string& ip, const std::string& port);
 
     void DOGE_EXPORT sleep(uint32_t ms);
+
+    const std::string encrypt(const std::string key, const std::string plain);
+    const std::string decrypt(const std::string key, const std::string cipher);
 }

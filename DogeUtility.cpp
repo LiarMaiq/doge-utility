@@ -25,7 +25,17 @@
 #include <iconv.h>
 #endif
 
+#include "cryptlib.h"
+#include "randpool.h"
+#include "osrng.h"
+#include "files.h"
+#include "aes.h"
+#include "modes.h"
+#include "filters.h"
+#include "hex.h"
+
 using namespace std;
+using namespace CryptoPP;
 
 
 //bool Doge_Utility::copyFile(const TCHAR *_pFrom, const TCHAR *_pTo, WORD flags)
@@ -413,4 +423,86 @@ void Doge_Utility::sleep(uint32_t ms)
 #else 
     usleep(ms * 1000);
 #endif
+}
+
+const SecByteBlock getKey(const std::string key)
+{
+	SecByteBlock k(0x00, AES::DEFAULT_KEYLENGTH);
+    memcpy(k.data(), key.data(), key.length() <= AES::DEFAULT_KEYLENGTH ? (key.length()) : (AES::DEFAULT_KEYLENGTH));
+    return k;
+}
+
+const std::string Doge_Utility::encrypt(const std::string key, const std::string plain)
+{
+    if (key.empty() || plain.empty())
+        return "";
+
+	SecByteBlock k = getKey(key);
+    SecByteBlock iv(AES::BLOCKSIZE);
+    AutoSeededRandomPool prng;
+    prng.GenerateBlock(iv, iv.size());
+    std::string cipher;
+
+    try
+    {
+        CBC_Mode< AES >::Encryption e;
+        e.SetKeyWithIV(k, k.size(), iv);
+
+        StringSource s(plain, true, 
+            new StreamTransformationFilter(e,
+                new StringSink(cipher)
+            ) // StreamTransformationFilter
+        ); // StringSource
+    }
+    catch(const Exception& e)
+    {
+        // std::cerr << e.what() << std::endl;
+        // exit(1);
+        return "";
+    }
+
+    std::string strIv;
+    StringSource(iv, iv.size(), true, new HexEncoder(new StringSink(strIv)));
+    std::string strPd;
+    StringSource(cipher, true, new HexEncoder(new StringSink(strPd)));
+
+    return strIv + strPd;
+}
+
+const std::string Doge_Utility::decrypt(const std::string key, const std::string cipher)
+{
+    SecByteBlock k = getKey(key);
+
+    if (cipher.size() < AES::BLOCKSIZE * 2)
+        return "";
+
+    std::string strHexIv = cipher.substr(0U, AES::BLOCKSIZE * 2);
+    std::string strHexPd = cipher.substr(AES::BLOCKSIZE * 2);
+
+    std::string strIv;
+    std::string strPd;
+
+    StringSource(strHexIv, true, new HexDecoder(new StringSink(strIv)));
+    StringSource(strHexPd, true, new HexDecoder(new StringSink(strPd)));
+    std::string plain;
+
+    try
+    {
+        CBC_Mode< AES >::Decryption d;
+        d.SetKeyWithIV(k, k.size(), (byte*)strIv.c_str());
+
+        StringSource s(strPd, true, 
+            new StreamTransformationFilter(d,
+                new StringSink(plain)
+            ) // StreamTransformationFilter
+        ); // StringSource
+    }
+    catch(const Exception& e)
+    {
+        // std::cerr << e.what() << std::endl;
+        // exit(1);
+        return "";
+    }
+
+    return plain;
 }
