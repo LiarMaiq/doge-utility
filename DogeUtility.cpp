@@ -35,7 +35,6 @@
 #include "hex.h"
 
 using namespace std;
-using namespace CryptoPP;
 
 
 //bool Doge_Utility::copyFile(const TCHAR *_pFrom, const TCHAR *_pTo, WORD flags)
@@ -425,10 +424,10 @@ void Doge_Utility::sleep(uint32_t ms)
 #endif
 }
 
-const SecByteBlock getKey(const std::string key)
+const CryptoPP::SecByteBlock getKey(const std::string key)
 {
-	SecByteBlock k(0x00, AES::DEFAULT_KEYLENGTH);
-    memcpy(k.data(), key.data(), key.length() <= AES::DEFAULT_KEYLENGTH ? (key.length()) : (AES::DEFAULT_KEYLENGTH));
+    CryptoPP::SecByteBlock k(0x00, CryptoPP::AES::DEFAULT_KEYLENGTH);
+    memcpy(k.data(), key.data(), key.length() <= CryptoPP::AES::DEFAULT_KEYLENGTH ? (key.length()) : (CryptoPP::AES::DEFAULT_KEYLENGTH));
     return k;
 }
 
@@ -437,24 +436,24 @@ const std::string Doge_Utility::encrypt(const std::string key, const std::string
     if (key.empty() || plain.empty())
         return "";
 
-	SecByteBlock k = getKey(key);
-    SecByteBlock iv(AES::BLOCKSIZE);
-    AutoSeededRandomPool prng;
+    CryptoPP::SecByteBlock k = getKey(key);
+    CryptoPP::SecByteBlock iv(CryptoPP::AES::BLOCKSIZE);
+    CryptoPP::AutoSeededRandomPool prng;
     prng.GenerateBlock(iv, iv.size());
     std::string cipher;
 
     try
     {
-        CBC_Mode< AES >::Encryption e;
+        CryptoPP::CBC_Mode< CryptoPP::AES >::Encryption e;
         e.SetKeyWithIV(k, k.size(), iv);
 
-        StringSource s(plain, true, 
-            new StreamTransformationFilter(e,
-                new StringSink(cipher)
+        CryptoPP::StringSource s(plain, true,
+            new CryptoPP::StreamTransformationFilter(e,
+                new CryptoPP::StringSink(cipher)
             ) // StreamTransformationFilter
         ); // StringSource
     }
-    catch(const Exception& e)
+    catch(const CryptoPP::Exception& e)
     {
         // std::cerr << e.what() << std::endl;
         // exit(1);
@@ -462,42 +461,42 @@ const std::string Doge_Utility::encrypt(const std::string key, const std::string
     }
 
     std::string strIv;
-    StringSource(iv, iv.size(), true, new HexEncoder(new StringSink(strIv)));
+    CryptoPP::StringSource(iv, iv.size(), true, new CryptoPP::HexEncoder(new CryptoPP::StringSink(strIv)));
     std::string strPd;
-    StringSource(cipher, true, new HexEncoder(new StringSink(strPd)));
+    CryptoPP::StringSource(cipher, true, new CryptoPP::HexEncoder(new CryptoPP::StringSink(strPd)));
 
     return strIv + strPd;
 }
 
 const std::string Doge_Utility::decrypt(const std::string key, const std::string cipher)
 {
-    SecByteBlock k = getKey(key);
+    CryptoPP::SecByteBlock k = getKey(key);
 
-    if (cipher.size() < AES::BLOCKSIZE * 2)
+    if (cipher.size() < CryptoPP::AES::BLOCKSIZE * 2)
         return "";
 
-    std::string strHexIv = cipher.substr(0U, AES::BLOCKSIZE * 2);
-    std::string strHexPd = cipher.substr(AES::BLOCKSIZE * 2);
+    std::string strHexIv = cipher.substr(0U, CryptoPP::AES::BLOCKSIZE * 2);
+    std::string strHexPd = cipher.substr(CryptoPP::AES::BLOCKSIZE * 2);
 
     std::string strIv;
     std::string strPd;
 
-    StringSource(strHexIv, true, new HexDecoder(new StringSink(strIv)));
-    StringSource(strHexPd, true, new HexDecoder(new StringSink(strPd)));
+    CryptoPP::StringSource(strHexIv, true, new CryptoPP::HexDecoder(new CryptoPP::StringSink(strIv)));
+    CryptoPP::StringSource(strHexPd, true, new CryptoPP::HexDecoder(new CryptoPP::StringSink(strPd)));
     std::string plain;
 
     try
     {
-        CBC_Mode< AES >::Decryption d;
-        d.SetKeyWithIV(k, k.size(), (byte*)strIv.c_str());
+        CryptoPP::CBC_Mode< CryptoPP::AES >::Decryption d;
+        d.SetKeyWithIV(k, k.size(), (CryptoPP::byte*)strIv.c_str());
 
-        StringSource s(strPd, true, 
-            new StreamTransformationFilter(d,
-                new StringSink(plain)
+        CryptoPP::StringSource s(strPd, true,
+            new CryptoPP::StreamTransformationFilter(d,
+                new CryptoPP::StringSink(plain)
             ) // StreamTransformationFilter
         ); // StringSource
     }
-    catch(const Exception& e)
+    catch(const CryptoPP::Exception& e)
     {
         // std::cerr << e.what() << std::endl;
         // exit(1);

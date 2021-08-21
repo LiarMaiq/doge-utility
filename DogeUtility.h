@@ -43,6 +43,6 @@ namespace Doge_Utility
 
     void DOGE_EXPORT sleep(uint32_t ms);
 
-    const std::string encrypt(const std::string key, const std::string plain);
-    const std::string decrypt(const std::string key, const std::string cipher);
+    const std::string DOGE_EXPORT encrypt(const std::string key, const std::string plain);
+    const std::string DOGE_EXPORT decrypt(const std::string key, const std::string cipher);
 }
